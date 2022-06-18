@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "d2runner": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

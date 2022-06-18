@@ -1,0 +1,26 @@
+﻿<local:ReactiveMainWindow
+        x:Class="d2runner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:d2runner"
+        mc:Ignorable="d"
+        Topmost="true"
+        WindowStyle="None"
+        Title="MainWindow" Height="30" Width="200">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <ContentControl x:Name="CurrentRun" VerticalAlignment="Center"/>
+            <TextBlock x:Name="CurrentRunElapsed" Margin="4,0,0,0" Text="{Binding CurrentRunElapsed, StringFormat={}{0:h\\:mm\\:ss\\.f}}" VerticalAlignment="Center"/>
+        </StackPanel>
+        <Button x:Name="PauseResumeButton" Grid.Column="1" FontFamily="Segoe UI Symbol" Content="&#xe103;"  VerticalAlignment="Center"/>
+        <!-- or e102 for play -->
+        <Button x:Name="DeleteRunButton" Grid.Column="2"  FontFamily="Segoe UI Symbol" Content="&#xe106;" VerticalAlignment="Center"/>
+    </Grid>
+</local:ReactiveMainWindow>
