@@ -6,9 +6,26 @@ using System.Reactive.Subjects;
 
 namespace d2runner
 {
-    public class RunTracker
+    public class RunRepository
     {
         private readonly List<Run> runs;
+
+        public RunRepository()
+        {
+            this.runs = new List<Run>();
+        }
+
+        public Run? LastRun { get => this.runs.LastOrDefault(); }
+
+        public void Add(Run run)
+        {
+            this.runs.Add(run);
+        }
+    }
+
+    public class RunTracker
+    {
+        private readonly RunRepository runs = new RunRepository();
         private readonly Subject<Run> runSubject;
         private Run? activeRun;
         private int idCounter = 0;
@@ -19,7 +36,6 @@ namespace d2runner
         {
             DiabloEvents.HellGameStarted.Subscribe(this.StartRun);
             DiabloEvents.RunEnded.Subscribe(this.EndRun);
-            this.runs = new List<Run>();
             this.runSubject = new Subject<Run>();
         }
 
@@ -40,7 +56,7 @@ namespace d2runner
                 return;
 
             this.activeRun = null;
-            this.runSubject.OnNext(this.runs.LastOrDefault());
+            this.runSubject.OnNext(this.runs.LastRun);
             this.idCounter--;
         }
 

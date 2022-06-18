@@ -24,6 +24,7 @@ namespace d2runner
             var tick = Observable.Interval(TimeSpan.FromMilliseconds(100));
 
             var o = tick.CombineLatest(this.runTracker.RunUpdate)
+                .Where(x => x.Second is not null)
                 .Select(x => (x.Second.End ?? DateTimeOffset.Now) - x.Second.Start)
                 .ObserveOnDispatcher()
                 .ToProperty(this, x => x.CurrentRunElapsed, out this.currentRunElapsed);
@@ -31,6 +32,7 @@ namespace d2runner
             this.runTracker.RunUpdate.ObserveOnDispatcher().ToProperty(this, x => x.CurrentRun, out this.currentRun);
 
             this.AbandonRunCommand = ReactiveCommand.Create(() => this.runTracker.AbandonRun());
+            DiabloEvents.AbandonLastRun.Select(dto => Unit.Default).InvokeCommand(this.AbandonRunCommand);
         }
     }
 }

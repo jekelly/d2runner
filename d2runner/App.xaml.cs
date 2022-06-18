@@ -26,13 +26,13 @@ namespace d2runner
                     .DistinctUntilChanged();
         }
 
-        public static IObservable<Key> GetKeys(this IKeyboardEvents evt)
+        public static IObservable<KeyEventArgsExt> GetKeys(this IKeyboardEvents evt)
         {
             return Observable.FromEventPattern(evt, nameof(evt.KeyUp))
                 .Select(oe => oe.EventArgs)
-                .Cast<KeyEventArgsExt>()
-                .Where(e => e.KeyCode == System.Windows.Forms.Keys.Escape)
-                .Select(e => Key.Escape);
+                .Cast<KeyEventArgsExt>();
+                //.Select(e => new KeyEventArgs(
+                //.Select(e => KeyInterop.KeyFromVirtualKey((int)e.KeyCode));
         }
     }
 
