@@ -22,8 +22,14 @@ namespace d2runner
 
         static DiabloEvents()
         {
-            evts = Hook.GlobalEvents();
-            //evts = new DummyKeyboardMouseEvents();
+            if (Debugger.IsAttached)
+            {
+                evts = new DummyKeyboardMouseEvents();
+            }
+            else
+            {
+                evts = Hook.GlobalEvents();
+            }
 
             // start a run
             var clickStart = evts

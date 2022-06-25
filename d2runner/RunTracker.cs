@@ -17,18 +17,20 @@ namespace d2runner
 
         public Run? LastRun { get => this.runs.LastOrDefault(); }
 
-        public void Add(Run run)
+        public virtual void Add(Run run)
         {
             this.runs.Add(run);
         }
+
+        public virtual int NextId() => 0;
     }
 
     public class RunTracker
     {
-        private readonly RunRepository runs = new RunRepository();
+        private readonly RunRepository runs = new SqlRunRepository();
         private readonly Subject<Run> runSubject;
         private Run? activeRun;
-        private int idCounter = 0;
+        private int idCounter;
 
         public IObservable<Run> RunUpdate => this.runSubject;
 
@@ -37,6 +39,7 @@ namespace d2runner
             DiabloEvents.HellGameStarted.Subscribe(this.StartRun);
             DiabloEvents.RunEnded.Subscribe(this.EndRun);
             this.runSubject = new Subject<Run>();
+            this.idCounter = this.runs.NextId();
         }
 
         private void StartRun(DateTimeOffset startTime)
