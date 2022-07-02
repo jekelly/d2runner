@@ -15,7 +15,11 @@ namespace d2runner
         private readonly ObservableAsPropertyHelper<Run> currentRun;
         public Run CurrentRun => this.currentRun.Value;
 
+        public ReactiveCommand<Unit, Unit> StartStopCommand { get; }
         public ReactiveCommand<Unit, Unit> AbandonRunCommand { get; }
+
+        private readonly ObservableAsPropertyHelper<string> playPauseIcon;
+        public string PlayPauseIcon => this.playPauseIcon.Value;
 
         public MainWindowViewModel()
         {
@@ -29,10 +33,28 @@ namespace d2runner
                 .ObserveOnDispatcher()
                 .ToProperty(this, x => x.CurrentRunElapsed, out this.currentRunElapsed);
 
-            this.runTracker.RunUpdate.ObserveOnDispatcher().ToProperty(this, x => x.CurrentRun, out this.currentRun);
+            var runUpdate = this.runTracker.RunUpdate.ObserveOnDispatcher();
+            runUpdate.Select(x => IsRunActive(x) ? char.ConvertFromUtf32(0xe20d) : char.ConvertFromUtf32(0xe102)).ToProperty(this, x => x.PlayPauseIcon, out this.playPauseIcon);
+            runUpdate.ToProperty(this, x => x.CurrentRun, out this.currentRun);
+            //runUpdate.Select(x => x is null ? char. "&#xe103;" : "&#xe102;").ToProperty(this, x => x.PlayPauseIcon, out this.playPauseIcon);
 
+            this.StartStopCommand = ReactiveCommand.Create(this.StartOrStop);
             this.AbandonRunCommand = ReactiveCommand.Create(() => this.runTracker.AbandonRun());
             DiabloEvents.AbandonLastRun.Select(dto => Unit.Default).InvokeCommand(this.AbandonRunCommand);
+        }
+
+        private static bool IsRunActive(Run run) => run?.IsRunning ?? false;
+
+        private void StartOrStop()
+        {
+            if (IsRunActive(this.CurrentRun))
+            {
+                this.runTracker.StopRun();
+            }
+            else
+            {
+                this.runTracker.StartRun();
+            }
         }
     }
 }

@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Data;
 using Microsoft.Data.Sqlite;
 
 namespace d2runner
 {
     public class SqlRunRepository : RunRepository, IDisposable
     {
-        private readonly SqliteConnection connection; 
+        private readonly SqliteConnection connection;
 
         public SqlRunRepository()
         {
@@ -21,6 +22,53 @@ namespace d2runner
                 );
             ";
             command.ExecuteNonQuery();
+
+            // read runs
+            this.ReadRuns();
+
+
+            this.LastRun = this.GetLastRun();
+        }
+
+        private void ReadRuns()
+        {
+            var c = this.connection.CreateCommand();
+            c.CommandText = "SELECT * FROM runs";
+            var reader = c.ExecuteReader();
+            while (reader.Read())
+            {
+                base.Add(ReadRun(reader));
+            }
+        }
+
+        private static Run ReadRun(IDataRecord data)
+        {
+            var start = DateTimeOffset.Parse((string)data["start"]);
+            var duration = (double)data["durationMs"];
+            var run = new Run((int)data.GetInt64(0))
+            {
+                Start = start,
+                End = start + TimeSpan.FromMilliseconds(duration)
+            };
+            return run;
+        }
+
+        public override void Remove(Run run)
+        {
+            base.Remove(run);
+
+            var c = this.connection.CreateCommand();
+            c.CommandText = $"DELETE from runs where id = {run.Id}";
+            c.ExecuteNonQuery();
+        }
+
+        private Run? GetLastRun()
+        {
+            var c = this.connection.CreateCommand();
+            c.CommandText = $"SELECT * FROM runs ORDER BY id DESC LIMIT 1";
+            var reader = c.ExecuteReader();
+            reader.Read();
+            return ReadRun(reader);
         }
 
         public override int NextId()
@@ -37,6 +85,10 @@ namespace d2runner
 
         public override void Add(Run run)
         {
+            if (this.Runs.Lookup(run.Id) != DynamicData.Kernel.Optional<Run>.None)
+            {
+                return;
+            }
             base.Add(run);
             var addCommand = this.connection.CreateCommand();
             addCommand.CommandText = $@"

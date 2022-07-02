@@ -3,23 +3,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using DynamicData;
 
 namespace d2runner
 {
     public class RunRepository
     {
-        private readonly List<Run> runs;
+        private readonly SourceCache<Run, int> runCache;
+
+        public IObservableCache<Run, int> Runs { get; }
 
         public RunRepository()
         {
-            this.runs = new List<Run>();
+            this.runCache = new SourceCache<Run, int>(r => r.Id);
+            this.Runs = this.runCache.AsObservableCache();
+
+            this.runCache
+                .Connect()
+                .Select(cs =>
+                {
+                    var id = this.runCache.Keys.Any() ? this.runCache.Keys.Max() : -1;
+                    return id >= 0 ? this.runCache.Lookup(id).Value : null;
+                })
+                .Subscribe(maxRun => this.LastRun = maxRun);
         }
 
-        public Run? LastRun { get => this.runs.LastOrDefault(); }
+        public Run? LastRun { get; protected set; }
 
         public virtual void Add(Run run)
         {
-            this.runs.Add(run);
+            this.runCache.AddOrUpdate(run);
+            this.LastRun = run;
+        }
+
+        public virtual void Remove(Run run)
+        {
+            this.runCache.Remove(run);
         }
 
         public virtual int NextId() => 0;
@@ -28,7 +47,7 @@ namespace d2runner
     public class RunTracker
     {
         private readonly RunRepository runs = new SqlRunRepository();
-        private readonly Subject<Run> runSubject;
+        private readonly BehaviorSubject<Run> runSubject;
         private Run? activeRun;
         private int idCounter;
 
@@ -38,9 +57,12 @@ namespace d2runner
         {
             DiabloEvents.HellGameStarted.Subscribe(this.StartRun);
             DiabloEvents.RunEnded.Subscribe(this.EndRun);
-            this.runSubject = new Subject<Run>();
+            this.runSubject = new BehaviorSubject<Run>(this.runs.LastRun);
             this.idCounter = this.runs.NextId();
         }
+
+        public void StartRun() => this.StartRun(DateTimeOffset.Now);
+        public void StopRun() => this.EndRun(DateTimeOffset.Now);
 
         private void StartRun(DateTimeOffset startTime)
         {
@@ -56,8 +78,9 @@ namespace d2runner
         public void AbandonRun()
         {
             if (this.activeRun is null)
-                return;
+                this.activeRun = this.runs.LastRun;
 
+            this.runs.Remove(this.activeRun);
             this.activeRun = null;
             this.runSubject.OnNext(this.runs.LastRun);
             this.idCounter--;

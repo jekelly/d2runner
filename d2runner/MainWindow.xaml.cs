@@ -50,6 +50,8 @@ namespace d2runner
             {
                 this.OneWayBind(this.ViewModel, vm => vm.CurrentRun, v => v.CurrentRun.Content).DisposeWith(disposable);
                 this.OneWayBind(this.ViewModel, vm => vm.CurrentRunElapsed, v => v.CurrentRunElapsed.Text, s => s.ToString("h\\:mm\\:ss\\.f")).DisposeWith(disposable);
+                this.OneWayBind(this.ViewModel, vm => vm.PlayPauseIcon, v => v.PauseResumeButton.Content).DisposeWith(disposable);
+                this.BindCommand(this.ViewModel, vm => vm.StartStopCommand, v => v.PauseResumeButton).DisposeWith(disposable);
                 this.BindCommand(this.ViewModel, vm => vm.AbandonRunCommand, v => v.DeleteRunButton).DisposeWith(disposable);
             });
         }

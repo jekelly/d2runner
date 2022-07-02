@@ -19,8 +19,7 @@
             <ContentControl x:Name="CurrentRun" VerticalAlignment="Center"/>
             <TextBlock x:Name="CurrentRunElapsed" Margin="4,0,0,0" Text="{Binding CurrentRunElapsed, StringFormat={}{0:h\\:mm\\:ss\\.f}}" VerticalAlignment="Center"/>
         </StackPanel>
-        <Button x:Name="PauseResumeButton" Grid.Column="1" FontFamily="Segoe UI Symbol" Content="&#xe103;"  VerticalAlignment="Center"/>
-        <!-- or e102 for play -->
+        <Button x:Name="PauseResumeButton" Grid.Column="1" FontFamily="Segoe UI Symbol" Content=""  VerticalAlignment="Center"/>
         <Button x:Name="DeleteRunButton" Grid.Column="2"  FontFamily="Segoe UI Symbol" Content="&#xe106;" VerticalAlignment="Center"/>
     </Grid>
 </local:ReactiveMainWindow>

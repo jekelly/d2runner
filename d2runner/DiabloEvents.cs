@@ -22,7 +22,7 @@ namespace d2runner
 
         static DiabloEvents()
         {
-            if (Debugger.IsAttached)
+            if (Debugger.IsAttached && !Process.GetProcesses().Any(p => p.ProcessName == "D2R"))
             {
                 evts = new DummyKeyboardMouseEvents();
             }

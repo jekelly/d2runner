@@ -42,16 +42,12 @@ namespace d2runner
         {
             this.Id = id;
             this.Start = DateTimeOffset.Now;
-            this.IsRunning = true;
         }
 
         public int Id { get; }
         public DateTimeOffset Start { get; set; } = DateTimeOffset.Now;
         public DateTimeOffset? End { get; set; }
-        public bool IsRunning { get; set; }
-
-        public void Pause() => this.IsRunning = false;
-        public void Resume() => this.IsRunning = true;
+        public bool IsRunning => this.End is null;
 
         public override string ToString()
         {
